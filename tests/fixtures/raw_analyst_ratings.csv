@@ -1,0 +1,3 @@
+index,date,headline,publisher,stock
+1,2020-01-01T00:00:00Z,Test headline,example.com,ABC
+2,2020-01-02T00:00:00Z,Another test headline,news.example,XYZ
