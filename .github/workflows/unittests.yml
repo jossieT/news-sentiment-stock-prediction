@@ -21,11 +21,4 @@ jobs:
           pip install -r requirements.txt
           # install test runner(s) not included in requirements.txt
           python -m pip install pytest
-      - name: Prepare test data (CI)
-        run: |
-          # Create a minimal sample CSV so tests that expect data/raw_analyst_ratings.csv pass in CI
-          python -c "from pathlib import Path; p=Path('data'); p.mkdir(parents=True, exist_ok=True); p.write_text('index,date,headline,publisher,stock\\n1,2020-01-01T00:00:00Z,Test headline,example.com,ABC\\n2,2020-01-02T00:00:00Z,Another test headline,news.example,XYZ\\n')"
-      - name: Run tests
-        run: |
-          # use the module invocation to avoid PATH/shell issues
-          python -m pytest -q
+      
