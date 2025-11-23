@@ -1,4 +1,4 @@
-from src.loader import load_news
+from src.utils.loader import load_news
 import os
 
 def test_loader_basic():
