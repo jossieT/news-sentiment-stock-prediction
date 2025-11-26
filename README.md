@@ -95,3 +95,38 @@ If you'd like a more formal changelog or to extract the notebook callback into a
 ---
 
 Generated / updated in-workspace on review.
+
+## Quantitative Analysis Implemented
+
+- **Scope:**: End-to-end notebook pipeline that converts raw news headlines into daily, per-symbol sentiment measures and studies their relationship with daily stock returns.
+- **Inputs:**: Primary news CSV `data/raw_analyst_ratings.csv` (requires a timestamp, headline/title, and symbol/ticker column). Optional local price CSVs at `data/{SYMBOL}.csv` per ticker; if absent the pipeline will attempt to fetch prices from `yfinance`.
+- **Processing Steps:**:
+  - **Date alignment:** map each headline timestamp to the trading day (headlines published at or after 16:00 are assigned to the next business day).
+  - **Cleaning:** normalize and strip URLs/punctuation from headlines (`clean_headline`).
+  - **Sentiment scoring:** VADER (`nltk.sentiment.vader`) is used when available; otherwise `TextBlob` is used; a lightweight keyword-based fallback is used if neither is installed.
+  - **Aggregation:** compute mean daily sentiment and headline counts per `symbol` + trading day.
+  - **Price & returns:** load daily price series (local CSV or `yfinance`), resample/forward-fill to business calendar, compute daily percent returns from `Adj Close`/`Close`.
+  - **Merge & analysis:** join daily sentiment to daily returns, compute Pearson and Spearman correlations (per symbol), and produce scatter/regression plots.
+- **Outputs:**: For each symbol with sufficient overlap the pipeline writes:
+  - `outputs/sentiment_returns_{SYMBOL}.csv` — merged per-day sentiment and returns used for correlation.
+  - `outputs/plot_{SYMBOL}.png` — scatter + regression plot of mean daily sentiment vs daily returns.
+  - Notebook-printed summary table of correlations (`pearson` and `spearman`) and number of days used.
+- **How to run (notebook):**:
+  - Open `notebooks/correlation_anlysis.ipynb`, execute the top cell to load helper functions, then run:
+
+```python
+# default reads `data/raw_analyst_ratings.csv` and writes outputs to `outputs/`
+run_pipeline()
+```
+
+- **Dependencies:**: recommended packages include `pandas`, `numpy`, `scipy`, `matplotlib`, `seaborn`, `nltk` (VADER lexicon), `textblob`, and `yfinance` (for price fallback). Install via:
+
+```powershell
+python -m pip install pandas numpy scipy matplotlib seaborn nltk textblob yfinance
+python -c "import nltk; nltk.download('vader_lexicon')"
+```
+
+- **Notes & Caveats:**:
+  - The pipeline heuristically detects timestamp/headline/symbol columns; if your CSV uses different names, update the notebook top cell or tell me the exact column names and I will adjust the parser.
+  - Price downloads via `yfinance` require internet access and may be rate-limited; for reproducible runs, include local `data/{SYMBOL}.csv` files.
+  - For small sample runs during development use `load_news(nrows=5000)` or enable `chunksize` to avoid loading the full CSV each iteration.
